@@ -39,4 +39,13 @@ public class User {
     private Boolean isActive = true;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt = L
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    public enum Role {
+        ADMIN, DOCTOR, NURSE
+    }
+
+    public enum Shift {
+        MORNING, AFTERNOON, NIGHT
+    }
+}
