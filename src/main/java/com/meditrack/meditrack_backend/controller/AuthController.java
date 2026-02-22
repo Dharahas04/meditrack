@@ -27,7 +27,8 @@ public class AuthController {
             @RequestBody LoginRequest request) {
 
         // Authenticate user
-        Authentication authentication = authenticationManager.authenticate(
+        // Authenticate user - throws exception if credentials wrong
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()));
