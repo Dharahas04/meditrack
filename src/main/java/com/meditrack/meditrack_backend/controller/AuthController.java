@@ -18,42 +18,42 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+        private final AuthenticationManager authenticationManager;
+        private final JwtUtil jwtUtil;
+        private final UserRepository userRepository;
+        private final PasswordEncoder passwordEncoder;
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return ResponseEntity.ok("User registered successfully");
-    }
+        @PostMapping("/register")
+        public ResponseEntity<String> register(@RequestBody User user) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+                userRepository.save(user);
+                return ResponseEntity.ok("User registered successfully");
+        }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
-            @RequestBody LoginRequest request) {
+        @PostMapping("/login")
+        public ResponseEntity<LoginResponse> login(
+                        @RequestBody LoginRequest request) {
 
-        // Authenticate user
-        // Authenticate user - throws exception if credentials wrong
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()));
+                // Authenticate user
+                // Authenticate user - throws exception if credentials wrong
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getEmail(),
+                                                request.getPassword()));
 
-        // Get user details
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                // Get user details
+                User user = userRepository.findByEmail(request.getEmail())
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Generate JWT token
-        String token = jwtUtil.generateToken(
-                user.getEmail(),
-                user.getRole().name());
+                // Generate JWT token
+                String token = jwtUtil.generateToken(
+                                user.getEmail(),
+                                user.getRole().name());
 
-        return ResponseEntity.ok(new LoginResponse(
-                token,
-                user.getName(),
-                user.getEmail(),
-                user.getRole().name()));
-    }
+                return ResponseEntity.ok(new LoginResponse(
+                                token,
+                                user.getName(),
+                                user.getEmail(),
+                                user.getRole().name()));
+        }
 }
