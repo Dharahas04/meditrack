@@ -42,7 +42,7 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum Role {
-        ADMIN, DOCTOR, NURSE
+        ADMIN, RECEPTIONIST, DOCTOR, NURSE, LAB_TECHNICIAN
     }
 
     public enum Shift {

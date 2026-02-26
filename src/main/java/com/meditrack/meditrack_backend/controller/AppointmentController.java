@@ -17,50 +17,42 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
-    // Get all appointments
     @GetMapping
     public ResponseEntity<List<Appointment>> getAllAppointments() {
         return ResponseEntity.ok(appointmentService.getAllAppointments());
     }
 
-    // Get appointment by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Appointment> getAppointmentById(
-            @PathVariable Integer id) {
+    public ResponseEntity<Appointment> getAppointmentById(@PathVariable Integer id) {
         return ResponseEntity.ok(appointmentService.getAppointmentById(id));
     }
 
-    // Get appointments by doctor
     @GetMapping("/doctor/{doctorId}")
-    public ResponseEntity<List<Appointment>> getByDoctor(
-            @PathVariable Integer doctorId) {
-        return ResponseEntity.ok(
-                appointmentService.getAppointmentsByDoctor(doctorId));
+    public ResponseEntity<List<Appointment>> getByDoctor(@PathVariable Integer doctorId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(doctorId));
     }
 
-    // Get appointments by date
     @GetMapping("/date/{date}")
-    public ResponseEntity<List<Appointment>> getByDate(
-            @PathVariable String date) {
-        return ResponseEntity.ok(
-                appointmentService.getAppointmentsByDate(
-                        LocalDate.parse(date)));
+    public ResponseEntity<List<Appointment>> getByDate(@PathVariable String date) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDate(LocalDate.parse(date)));
     }
 
-    // Create appointment
+    // Sprint 1 exact endpoint: POST /api/appointments/book
+    @PostMapping("/book")
+    public ResponseEntity<Appointment> bookAppointment(@RequestBody Appointment appointment) {
+        return ResponseEntity.ok(appointmentService.createAppointment(appointment));
+    }
+
+    // Existing endpoint kept
     @PostMapping
-    public ResponseEntity<Appointment> createAppointment(
-            @RequestBody Appointment appointment) {
-        return ResponseEntity.ok(
-                appointmentService.createAppointment(appointment));
+    public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment appointment) {
+        return ResponseEntity.ok(appointmentService.createAppointment(appointment));
     }
 
-    // Update appointment status
     @PutMapping("/{id}/status")
     public ResponseEntity<Appointment> updateStatus(
             @PathVariable Integer id,
             @RequestParam Appointment.AppointmentStatus status) {
-        return ResponseEntity.ok(
-                appointmentService.updateStatus(id, status));
+        return ResponseEntity.ok(appointmentService.updateStatus(id, status));
     }
 }
