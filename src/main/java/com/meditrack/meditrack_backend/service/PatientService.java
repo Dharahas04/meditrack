@@ -8,6 +8,8 @@ import java.util.List;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.meditrack.meditrack_backend.model.Bed;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +61,14 @@ public class PatientService {
     public void dischargePatient(Integer id) {
         Patient patient = getPatientById(id);
         patient.setStatus(Patient.PatientStatus.DISCHARGED);
-        patient.getBed().setStatus(com.meditrack.meditrack_backend.model.Bed.BedStatus.AVAILABLE);
+        patient.setDischargeDate(LocalDate.now());
+
+        if (patient.getBed() != null) {
+            patient.getBed().setStatus(Bed.BedStatus.AVAILABLE);
+            patient.setBed(null);
+        }
+
         patientRepository.save(patient);
     }
+
 }

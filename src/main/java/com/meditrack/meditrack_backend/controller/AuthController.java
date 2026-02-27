@@ -15,6 +15,9 @@ import com.meditrack.meditrack_backend.dto.RegisterRequest;
 import com.meditrack.meditrack_backend.model.Department;
 import com.meditrack.meditrack_backend.repository.DepartmentRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.EnumSet;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,18 +30,35 @@ public class AuthController {
         private final UserRepository userRepository;
         private final PasswordEncoder passwordEncoder;
         private final DepartmentRepository departmentRepository;
+        @Value("${app.auth.public-register-enabled:false}")
+        private boolean publicRegisterEnabled;
+
+        private static final Set<User.Role> PUBLIC_REGISTER_ROLES = EnumSet.of(
+                        User.Role.DOCTOR,
+                        User.Role.NURSE,
+                        User.Role.RECEPTIONIST,
+                        User.Role.LAB_TECHNICIAN);
 
         @PostMapping("/register")
         public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+                if (!publicRegisterEnabled) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Public registration is disabled");
+                }
+
                 if (request.getRole() == null) {
                         return ResponseEntity.badRequest().body("Role is required");
+                }
+
+                User.Role role = request.getRole();
+                if (!PUBLIC_REGISTER_ROLES.contains(role)) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                        .body("Role is not allowed for public registration");
                 }
 
                 if (userRepository.findByEmail(request.getEmail()).isPresent()) {
                         return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists");
                 }
 
-                User.Role role = request.getRole();
                 boolean doctor = role == User.Role.DOCTOR;
                 boolean shiftRequired = role == User.Role.DOCTOR
                                 || role == User.Role.NURSE

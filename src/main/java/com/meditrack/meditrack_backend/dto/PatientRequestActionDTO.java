@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class PatientRequestActionDTO {
-    private Integer processedByUserId;
     private String remarks;
 }

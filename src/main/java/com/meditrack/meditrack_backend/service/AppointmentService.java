@@ -8,6 +8,7 @@ import com.meditrack.meditrack_backend.repository.PatientRepository;
 import com.meditrack.meditrack_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -62,8 +63,17 @@ public class AppointmentService {
         return saved;
     }
 
-    public Appointment updateStatus(Integer id, Appointment.AppointmentStatus status) {
+    public Appointment updateStatus(Integer id, Appointment.AppointmentStatus status, Integer actorUserId,
+            User.Role actorRole) {
         Appointment appointment = getAppointmentById(id);
+
+        if (actorRole == User.Role.DOCTOR) {
+            Integer appointmentDoctorId = appointment.getDoctor() != null ? appointment.getDoctor().getId() : null;
+            if (appointmentDoctorId == null || !appointmentDoctorId.equals(actorUserId)) {
+                throw new AccessDeniedException("Doctors can only update their own appointments");
+            }
+        }
+
         appointment.setStatus(status);
         return appointmentRepository.save(appointment);
     }

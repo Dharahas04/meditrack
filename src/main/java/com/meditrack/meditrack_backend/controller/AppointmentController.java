@@ -5,6 +5,9 @@ import com.meditrack.meditrack_backend.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.meditrack.meditrack_backend.model.User;
+import com.meditrack.meditrack_backend.service.UserService;
+import org.springframework.security.core.Authentication;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.List;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final UserService userService;
 
     @GetMapping
     public ResponseEntity<List<Appointment>> getAllAppointments() {
@@ -52,7 +56,10 @@ public class AppointmentController {
     @PutMapping("/{id}/status")
     public ResponseEntity<Appointment> updateStatus(
             @PathVariable Integer id,
-            @RequestParam Appointment.AppointmentStatus status) {
-        return ResponseEntity.ok(appointmentService.updateStatus(id, status));
+            @RequestParam Appointment.AppointmentStatus status,
+            Authentication authentication) {
+        User actor = userService.getUserByEmail(authentication.getName());
+        return ResponseEntity.ok(appointmentService.updateStatus(id, status, actor.getId(), actor.getRole()));
     }
+
 }

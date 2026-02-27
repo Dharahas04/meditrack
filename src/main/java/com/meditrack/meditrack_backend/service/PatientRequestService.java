@@ -57,17 +57,15 @@ public class PatientRequestService {
         return patientRequestRepository.findByRequestedByDoctorId(doctorId);
     }
 
-    public PatientRequest approve(Integer requestId, PatientRequestActionDTO dto) {
-
+    public PatientRequest approve(Integer requestId, PatientRequestActionDTO dto, Integer processorUserId) {
         PatientRequest req = getById(requestId);
-        User processor = getProcessor(dto.getProcessedByUserId());
+        User processor = getProcessor(processorUserId);
 
         req.setStatus(PatientRequest.RequestStatus.APPROVED);
         req.setProcessedBy(processor);
-        req.setRemarks(dto.getRemarks());
+        req.setRemarks(dto != null ? dto.getRemarks() : null);
         req.setProcessedAt(LocalDateTime.now());
 
-        // 🔥 CREATE PATIENT
         Patient patient = new Patient();
         patient.setName(req.getPatientName());
         patient.setAge(req.getAge());
@@ -80,29 +78,27 @@ public class PatientRequestService {
         patient.setAdmissionDate(LocalDate.now());
         patient.setStatus(Patient.PatientStatus.ADMITTED);
 
-        // 🔥 SAVE PATIENT FIRST
         Patient savedPatient = patientRepository.save(patient);
-
-        // 🔥 STORE CREATED PATIENT ID
         req.setCreatedPatient(savedPatient);
+
         return patientRequestRepository.save(req);
     }
 
-    public PatientRequest reject(Integer requestId, PatientRequestActionDTO dto) {
+    public PatientRequest reject(Integer requestId, PatientRequestActionDTO dto, Integer processorUserId) {
         PatientRequest req = getById(requestId);
-        User processor = getProcessor(dto.getProcessedByUserId());
+        User processor = getProcessor(processorUserId);
 
         req.setStatus(PatientRequest.RequestStatus.REJECTED);
         req.setProcessedBy(processor);
-        req.setRemarks(dto.getRemarks());
+        req.setRemarks(dto != null ? dto.getRemarks() : null);
         req.setProcessedAt(LocalDateTime.now());
 
         return patientRequestRepository.save(req);
     }
 
-    public PatientRequest markRegistered(Integer requestId, Integer processedByUserId) {
+    public PatientRequest markRegistered(Integer requestId, Integer processorUserId) {
         PatientRequest req = getById(requestId);
-        User processor = getProcessor(processedByUserId);
+        User processor = getProcessor(processorUserId);
 
         req.setStatus(PatientRequest.RequestStatus.REGISTERED);
         req.setProcessedBy(processor);

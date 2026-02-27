@@ -9,6 +9,7 @@ import com.meditrack.meditrack_backend.repository.PrescriptionRepository;
 import com.meditrack.meditrack_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 
@@ -68,17 +69,30 @@ public class PrescriptionService {
         return prescriptionRepository.findByAssignedNurseIdOrderByCreatedAtDesc(nurseId);
     }
 
-    public Prescription stopPrescription(Integer prescriptionId) {
+    public Prescription stopPrescription(Integer prescriptionId, Integer authenticatedDoctorId) {
         Prescription p = prescriptionRepository.findById(prescriptionId)
                 .orElseThrow(() -> new RuntimeException("Prescription not found"));
+        validateDoctorOwnership(p, authenticatedDoctorId);
         p.setStatus(Prescription.PrescriptionStatus.STOPPED);
         return prescriptionRepository.save(p);
     }
 
-    public Prescription completePrescription(Integer prescriptionId) {
+    public Prescription completePrescription(Integer prescriptionId, Integer authenticatedDoctorId) {
         Prescription p = prescriptionRepository.findById(prescriptionId)
                 .orElseThrow(() -> new RuntimeException("Prescription not found"));
+        validateDoctorOwnership(p, authenticatedDoctorId);
         p.setStatus(Prescription.PrescriptionStatus.COMPLETED);
         return prescriptionRepository.save(p);
     }
+
+    private void validateDoctorOwnership(Prescription prescription, Integer authenticatedDoctorId) {
+        Integer ownerDoctorId = prescription.getPrescribedByDoctor() != null
+                ? prescription.getPrescribedByDoctor().getId()
+                : null;
+
+        if (ownerDoctorId == null || !ownerDoctorId.equals(authenticatedDoctorId)) {
+            throw new AccessDeniedException("You can only modify prescriptions you created");
+        }
+    }
+
 }

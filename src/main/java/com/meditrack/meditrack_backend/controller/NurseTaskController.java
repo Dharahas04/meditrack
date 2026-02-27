@@ -3,8 +3,10 @@ package com.meditrack.meditrack_backend.controller;
 import com.meditrack.meditrack_backend.dto.NurseTaskCreateDTO;
 import com.meditrack.meditrack_backend.model.NurseTask;
 import com.meditrack.meditrack_backend.service.NurseTaskService;
+import com.meditrack.meditrack_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,9 +19,11 @@ import java.util.Map;
 public class NurseTaskController {
 
     private final NurseTaskService nurseTaskService;
+    private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<NurseTask> create(@RequestBody NurseTaskCreateDTO dto) {
+    public ResponseEntity<NurseTask> create(@RequestBody NurseTaskCreateDTO dto, Authentication authentication) {
+        dto.setDoctorId(userService.getUserByEmail(authentication.getName()).getId());
         return ResponseEntity.ok(nurseTaskService.createTask(dto));
     }
 
@@ -41,8 +45,9 @@ public class NurseTaskController {
     @PutMapping("/{id}/complete")
     public ResponseEntity<NurseTask> complete(
             @PathVariable Integer id,
-            @RequestParam Integer nurseId,
+            Authentication authentication,
             @RequestBody(required = false) Map<String, String> body) {
+        Integer nurseId = userService.getUserByEmail(authentication.getName()).getId();
         String notes = body != null ? body.getOrDefault("notes", "") : "";
         return ResponseEntity.ok(nurseTaskService.markCompleted(id, nurseId, notes));
     }
@@ -50,8 +55,9 @@ public class NurseTaskController {
     @PutMapping("/{id}/missed")
     public ResponseEntity<NurseTask> missed(
             @PathVariable Integer id,
-            @RequestParam Integer nurseId,
+            Authentication authentication,
             @RequestBody(required = false) Map<String, String> body) {
+        Integer nurseId = userService.getUserByEmail(authentication.getName()).getId();
         String notes = body != null ? body.getOrDefault("notes", "") : "";
         return ResponseEntity.ok(nurseTaskService.markMissed(id, nurseId, notes));
     }

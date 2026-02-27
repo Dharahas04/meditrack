@@ -35,7 +35,15 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                                .requestMatchers("/api/auth/**", "/auth/**", "/api/departments/**",
+
+                                                // Auth endpoints (narrowed from /api/auth/**)
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/api/auth/login", "/auth/login",
+                                                                "/api/auth/register", "/auth/register")
+                                                .permitAll()
+
+                                                // Public reads needed by registration UI
+                                                .requestMatchers(HttpMethod.GET, "/api/departments/**",
                                                                 "/departments/**")
                                                 .permitAll()
 
@@ -44,7 +52,7 @@ public class SecurityConfig {
                                                 .hasAnyRole("ADMIN", "RECEPTIONIST", "DOCTOR", "NURSE",
                                                                 "LAB_TECHNICIAN")
 
-                                                // Doctor -> receptionist patient registration request flow
+                                                // Patient request flow
                                                 .requestMatchers(HttpMethod.POST, "/api/patient-requests")
                                                 .hasRole("DOCTOR")
                                                 .requestMatchers(HttpMethod.GET, "/api/patient-requests/**")
@@ -62,7 +70,6 @@ public class SecurityConfig {
                                                 .hasAnyRole("ADMIN", "DOCTOR")
                                                 .requestMatchers(HttpMethod.PUT, "/api/patients/*")
                                                 .hasAnyRole("ADMIN", "RECEPTIONIST")
-
                                                 .requestMatchers(HttpMethod.GET, "/api/patients/**")
                                                 .hasAnyRole("ADMIN", "RECEPTIONIST", "DOCTOR", "NURSE")
 
@@ -77,7 +84,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/api/appointments/**")
                                                 .hasAnyRole("ADMIN", "RECEPTIONIST", "DOCTOR", "NURSE")
 
-                                                // Prescriptions (doctor creates; nurse/admin can view)
+                                                // Prescriptions
                                                 .requestMatchers(HttpMethod.POST, "/api/prescriptions")
                                                 .hasRole("DOCTOR")
                                                 .requestMatchers(HttpMethod.PUT, "/api/prescriptions/*/stop",
@@ -86,7 +93,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/api/prescriptions/**")
                                                 .hasAnyRole("ADMIN", "DOCTOR", "NURSE")
 
-                                                // Nurse tasks (doctor assigns; nurse executes)
+                                                // Nurse tasks
                                                 .requestMatchers(HttpMethod.POST, "/api/nurse-tasks")
                                                 .hasRole("DOCTOR")
                                                 .requestMatchers(HttpMethod.PUT, "/api/nurse-tasks/*/complete",
@@ -95,7 +102,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/api/nurse-tasks/**")
                                                 .hasAnyRole("ADMIN", "DOCTOR", "NURSE")
 
-                                                // Lab tests (module-ready)
+                                                // Lab tests
                                                 .requestMatchers(HttpMethod.POST, "/api/lab-tests/**")
                                                 .hasAnyRole("DOCTOR", "LAB_TECHNICIAN")
                                                 .requestMatchers(HttpMethod.PUT, "/api/lab-tests/**")
@@ -109,17 +116,21 @@ public class SecurityConfig {
                                                 .hasAnyRole("ADMIN", "NURSE")
                                                 .requestMatchers(HttpMethod.GET, "/api/beds/**")
                                                 .hasAnyRole("ADMIN", "RECEPTIONIST", "DOCTOR", "NURSE")
+                                                .requestMatchers(HttpMethod.POST, "/api/beds")
+                                                .hasRole("ADMIN")
 
-                                                // Attendance
+                                                // Attendance leak fix
                                                 .requestMatchers(HttpMethod.POST, "/api/attendance/checkin/**",
                                                                 "/api/attendance/mark")
                                                 .hasAnyRole("DOCTOR", "NURSE", "LAB_TECHNICIAN")
                                                 .requestMatchers(HttpMethod.PUT, "/api/attendance/checkout/**")
                                                 .hasAnyRole("DOCTOR", "NURSE", "LAB_TECHNICIAN")
-                                                .requestMatchers(HttpMethod.GET, "/api/attendance/**")
-                                                .hasAnyRole("ADMIN", "DOCTOR", "NURSE", "LAB_TECHNICIAN")
-                                                .requestMatchers(HttpMethod.POST, "/api/beds")
+                                                .requestMatchers(HttpMethod.GET, "/api/attendance",
+                                                                "/api/attendance/date/**")
                                                 .hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.GET, "/api/attendance/report",
+                                                                "/api/attendance/user/**")
+                                                .hasAnyRole("ADMIN", "DOCTOR", "NURSE", "LAB_TECHNICIAN")
 
                                                 // Alerts
                                                 .requestMatchers("/api/alerts/**").hasRole("ADMIN")
